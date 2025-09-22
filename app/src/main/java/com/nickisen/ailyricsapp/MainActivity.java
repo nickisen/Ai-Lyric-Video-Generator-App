@@ -11,11 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,26 +31,33 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
     private Uri srtFileUri; // Variable zum Speichern des Pfads zur ausgewählten Datei
+    private List<Subtitle> subtitles; // Liste zum Speichern der geparsten Untertitel
 
     // ActivityResultLauncher für die Dateiauswahl
     private final ActivityResultLauncher<Intent> selectSrtLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        if (data != null) {
-                            srtFileUri = data.getData();
-                            Log.d(TAG, "SRT-Datei ausgewählt: " + srtFileUri.toString());
+            result -> { // Lambda-Ausdruck für bessere Lesbarkeit
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        srtFileUri = data.getData();
+                        Log.d(TAG, "SRT-Datei ausgewählt: " + srtFileUri.toString());
+
+                        // Parse die ausgewählte SRT-Datei
+                        subtitles = SrtParser.parse(this, srtFileUri);
+
+                        if (subtitles != null && !subtitles.isEmpty()) {
                             String fileName = getFileName(srtFileUri);
                             tvSelectedFile.setText("Ausgewählt: " + fileName);
-                            tvStatus.setText("SRT-Datei erfolgreich geladen.");
+                            tvStatus.setText(subtitles.size() + " Untertitel erfolgreich geladen.");
                             btnGenerateVideo.setEnabled(true); // Aktiviere den "Video erstellen"-Button
+                        } else {
+                            tvStatus.setText("Fehler: Die SRT-Datei konnte nicht gelesen werden oder ist leer.");
+                            btnGenerateVideo.setEnabled(false);
                         }
-                    } else {
-                        tvStatus.setText("Dateiauswahl abgebrochen.");
                     }
+                } else {
+                    tvStatus.setText("Dateiauswahl abgebrochen.");
                 }
             });
 
@@ -73,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnGenerateVideo.setOnClickListener(v -> {
             String artStyle = etArtStyle.getText().toString();
-            if (artStyle.isEmpty()) {
+            if (artStyle.trim().isEmpty()) {
                 tvStatus.setText("Bitte gib einen Art-Style ein.");
                 return;
             }
@@ -81,13 +88,15 @@ public class MainActivity extends AppCompatActivity {
                 tvStatus.setText("Bitte wähle zuerst eine SRT-Datei aus.");
                 return;
             }
-            // TODO: Logik zur Videogenerierung
+            // TODO: Logik zur Videogenerierung hinzufügen
             tvStatus.setText("Starte Videogenerierung für Stil: " + artStyle);
             progressBar.setVisibility(View.VISIBLE);
+            btnGenerateVideo.setEnabled(false);
+            btnSelectSrt.setEnabled(false);
         });
 
         btnDownloadVideo.setOnClickListener(v -> {
-            // TODO: Logik zum Herunterladen
+            // TODO: Logik zum Herunterladen des Videos hinzufügen
             tvStatus.setText("Download wird implementiert...");
         });
     }
@@ -96,10 +105,9 @@ public class MainActivity extends AppCompatActivity {
     private void openFilePicker() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*"); // Erlaube alle Dateitypen, wir filtern auf .srt
+        intent.setType("*/*"); // Erlaube alle Dateitypen
         String[] mimetypes = {"application/x-subrip", "text/plain"};
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
-
 
         tvStatus.setText("Bitte wähle eine .srt-Datei aus.");
         selectSrtLauncher.launch(intent);
