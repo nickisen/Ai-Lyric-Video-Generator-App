@@ -35,6 +35,8 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     implementation libs.generativeai
+    implementation libs.guava
+    implementation("com.google.guava:guava:33.0.0-android") // Or the latest version
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
