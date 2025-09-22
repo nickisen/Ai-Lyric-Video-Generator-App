@@ -37,6 +37,8 @@ dependencies {
     implementation libs.generativeai
     implementation libs.guava
     implementation("com.google.guava:guava:33.0.0-android") // Or the latest version
+    implementation libs.jcodec // DIESE ZEILE HINZUFÜGEN
+    implementation libs.gson // DIESE ZEILE HINZUFÜGEN
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core

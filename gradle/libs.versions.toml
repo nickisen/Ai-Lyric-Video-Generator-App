@@ -20,6 +20,9 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version = "0.7.0" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" } # CORRECTED LINE
+jcodec = { group = "org.jcodec", name = "jcodec-android", version = "0.2.5" } # DIESE ZEILE HINZUFÜGEN
+gson = { group = "com.google.code.gson", name = "gson", version = "2.10.1" } # DIESE ZEILE HINZUFÜGEN
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
     
